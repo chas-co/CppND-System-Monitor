@@ -40,18 +40,28 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
-std::vector<std::string> CpuUtilization();
+std::vector<long> CpuUtilization();
 long Jiffies();
 long ActiveJiffies();
 long ActiveJiffies(int pid);
+float Seconds(int pid);
 long IdleJiffies();
+
 
 // Processes
 std::string Command(int pid);
-std::string Ram(int pid);
+long Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
 long int UpTime(int pid);
+
+enum ProcessCpuStates{
+  kUtime = 14,
+  kStime = 15,
+  kCutime = 16,
+  kCstime = 17,
+  kStarttime = 22, 
+};
 };  // namespace LinuxParser
 
 #endif
