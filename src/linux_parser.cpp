@@ -157,24 +157,23 @@ long LinuxParser::ActiveJiffies(int pid)
   string pidstr = to_string(pid);
   string value; 
   vector<string> jiffies{};
-  long active_jiffies;
+  long active_jiffies=0;
   string line, key;
   std::ifstream filstream(kProcDirectory + pidstr + kStatFilename);
   if (filstream.is_open())
   {
-    while (getline(filstream,line))
+    getline(filstream,line);
+    std::istringstream linestream(line);
+    for (int i = 1; i <= kStarttime; i++) 
     {
-      std::istringstream linestream(line);
-      for (int i = 1; i <= kStarttime; i++) 
+      linestream >> value;
+      if (i == kUtime || i == kStime || i == kCutime || i == kCstime ) 
       {
-        linestream >> value;
-        if (i == kUtime || i == kStime || i == kCutime || i == kCstime ) 
-        {
-          // read in clock ticks and convert to seconds by dividing by clock ticks per second
-          active_jiffies += std::stof(value); 
-        }
+      // read in clock ticks and convert to seconds by dividing by clock ticks per second
+        active_jiffies += std::stof(value); 
       }
-    }
+     }
+    
   
   }
   return active_jiffies; 
@@ -272,7 +271,9 @@ long LinuxParser::Ram(int pid)
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
-        if (key == "VmSize") {
+        //VmData tgives the exact physical memory being used as a part of Physical RAM.VmSize is the sum of all the virtual memory
+        if (key == "VmData") 
+        {
           return value;
         }
       }
@@ -322,25 +323,28 @@ string LinuxParser::User(int pid){
 
 
 // Read and return the uptime of a process
-long LinuxParser::UpTime(int pid) 
-{ 
-  string pidstr= to_string(pid);
+long LinuxParser::UpTime(int pid) {
+  string pidstr = std::to_string(pid);
   string line;
+  long uptime = 0;
   string value;
-  long clockticks;
   std::ifstream filestream(kProcDirectory + pidstr + kStatFilename);
-  if (filestream.is_open()) 
-  {
-    std::getline(filestream, line) ;
-    std::istringstream linestream(line);
-    for (int i=1; i<kStarttime+1; i++ )
-    {
-      linestream >> value;
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      for (int i = 1; i <= kStarttime; i++) {
+        linestream >> value;
+        if (i == kStarttime) {
+          // read the starttime value in clock ticks and convert to seconds by dividing the by clock ticks per second
+          try {
+            uptime = UpTime() - std::stol(value) / sysconf(_SC_CLK_TCK);
+            return uptime;
+          } catch (const std::invalid_argument& arg) {
+            return 0;
+          }
+        }
+      }
     }
-   
-    clockticks= std::stoi(value);
   }
-    
-  long uptime= clockticks / sysconf(_SC_CLK_TCK);
-  return uptime; 
+  return uptime;
 }
