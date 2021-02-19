@@ -12,15 +12,22 @@ using std::to_string;
 using std::vector;
 
 // Return this process's ID
-Process::Process(int pid ): pid_(pid){ }
+Process::Process(int pid ): pid_(pid)
+{ 
+    Process::CpuUtilization();
+    Process::Command();
+    Process::Ram();
+    Process::User();
+    Process::UpTime();
+}
 
 int Process::Pid() { return pid_; }
 
 // Return this process's CPU utilization
 float Process::CpuUtilization() 
 { 
-    float total_time = LinuxParser::ActiveJiffies(Pid() / sysconf(_SC_CLK_TCK));
-    float seconds = LinuxParser::UpTime() - LinuxParser::UpTime(Pid());
+    float total_time = LinuxParser::ActiveJiffies(Pid()) / sysconf(_SC_CLK_TCK);
+    float seconds = LinuxParser::UpTime() -( LinuxParser::UpTime()- LinuxParser::UpTime(Pid()));
     cpuUtilization_= total_time / seconds; 
 
     return cpuUtilization_; 
@@ -36,12 +43,12 @@ string Process::Ram()
     try
     {
         // convert from kilobyte to mega byte
-        long ram_mb= ram_kb/1000; 
-        ram_=to_string(ram_mb);
+        long ram_mb = ram_kb / 1000; 
+        ram_= to_string(ram_mb);
     }
     catch(const std::invalid_argument& arg)
     {
-        ram_="0";
+        ram_ = "0" ;
     }
     
     return ram_; 
@@ -55,10 +62,7 @@ long int Process::UpTime() { upTime_ = LinuxParser::UpTime(Pid()); return upTime
 
 // Overload the "less than" comparison operator for Process objects
 
-bool Process::operator<(Process const& a) const 
+bool Process::operator < (Process const& a) const 
 {
-    if (a.cpuUtilization_ < this->cpuUtilization_)
-        return true ;
-    else
-        return false;
+    return (a.cpuUtilization_ < cpuUtilization_) ;
 }
