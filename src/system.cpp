@@ -20,21 +20,21 @@ Processor& System::Cpu() { return cpu_; }
 // Return a container composed of the system's processes
 vector<Process>& System::Processes() 
 {
-    // Create a vector to store the system process ids from the file system
-   vector<int> procs_id = LinuxParser::Pids();
-    vector<Process> sys_processes;
-    processes_.clear();
-    // Loop through the processes ids, create Process objects and store them in the system process container
-    for (int p : procs_id)
+    vector<Process> foundProcs{};
+    // read process IDs from file system and generate Vector
+    vector<int> procIds = LinuxParser::Pids();
+    for (int p : procIds) 
     {
-        Process proc(p);
-        sys_processes.emplace_back(proc);
+        Process temp_procs{p};
+        foundProcs.push_back(temp_procs);
+    
     }
-    sort( sys_processes.begin(),  sys_processes.end());
-    processes_ =  sys_processes;
+    // sort the processes according to their CPU usage
+    sort(foundProcs.begin(), foundProcs.end());
+    // update list of processes
+    processes_ = foundProcs;
 
-    return processes_; 
-
+    return processes_;
 }
 
 //Return the system's kernel identifier (string)
