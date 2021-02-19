@@ -10,7 +10,7 @@ using std::string;
 Processor::Processor(): prev_total(0), prev_idle(0), curr_total(LinuxParser::Jiffies()), curr_idle(LinuxParser::IdleJiffies()){}
 
 // Return the aggregate CPU utilization
-float Processor::Utilization() 
+double Processor::Utilization() 
 { 
     curr_total = LinuxParser:: Jiffies();
     curr_idle = LinuxParser::IdleJiffies();

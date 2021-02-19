@@ -7,7 +7,7 @@ class Processor {
   Processor();
 
 // Memeber Function
-  float Utilization(); 
+  double Utilization(); 
 
   // Declare any necessary private members
  private:
